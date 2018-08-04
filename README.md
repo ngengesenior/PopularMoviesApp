@@ -2,6 +2,8 @@
 This repo contains code for the Popular movies android app wich is the second project of the Androiid Nanodegree program at Udacity.
 
 The application requires an API key which can be gotten on [The Movie Database Website](https://www.themoviedb.org).
+
+Then replace the strings in Utils.java containing "YOUR_API_KEY" with you gotten key
 The application functionality when there is internet connection is demonstrated below
 
 [!Watch the video](https://github.com/ngengesenior/PopularMoviesApp/blob/master/internet.mp4)
