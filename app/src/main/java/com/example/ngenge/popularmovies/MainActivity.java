@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -55,7 +56,6 @@ public class MainActivity extends AppCompatActivity
 
 
     private static MoviesAdapter adapter = null;
-    private GridLayoutManager manager;
     private CoordinatorLayout coordinatorLayout;
 
 
@@ -66,7 +66,7 @@ private static MoviesAdapter.OnItemClickListener listener;
 
 private String url;
 private String URL_KEY = "urlKey";
-private String recPositionKey = "position";
+
 
 
     @Override
@@ -92,21 +92,26 @@ private String recPositionKey = "position";
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        if(!isNetworkConnected())
-        {
-            Snackbar.make(coordinatorLayout,getResources().getString(R.string.no_internet),Snackbar.LENGTH_LONG)
-                    .show();
-            return;
-        }
 
-        landscapeDecoration = new GridDividerItemDecoration(getResources().getDrawable(R.drawable.divider_horizontal),getResources().getDrawable(R.drawable.divider),3);
+
+        /**
+         * Moved the next three lines above the internet check
+         * because when the lines are below,when there is no internet,
+         * they are null
+         */
         movieList = findViewById(R.id.movieList);
+        landscapeDecoration = new GridDividerItemDecoration(getResources().getDrawable(R.drawable.divider_horizontal),getResources().getDrawable(R.drawable.divider),3);
         portratDecoration = new GridDividerItemDecoration(getResources().getDrawable(R.drawable.divider_horizontal),getResources().getDrawable(R.drawable.divider),2);
 
         movieList.setHasFixedSize(true);
+        if(!isNetworkConnected())
+        {
+            showNoInternet();
+            return;
+        }
+
 
         callOnClickListener();
         new MyTask().execute(url);
@@ -158,6 +163,9 @@ private String recPositionKey = "position";
             else {
 
 
+
+                showNoInternet();
+
             }
 
             return true;
@@ -170,8 +178,11 @@ private String recPositionKey = "position";
             if(isNetworkConnected())
             {
                 new MyTask().execute(Utils.baseTopRatedUrl);
-                adapter.notifyDataSetChanged();
 
+
+            }
+            else {
+                showNoInternet();
             }
 
 
@@ -222,7 +233,7 @@ private String recPositionKey = "position";
 
         if(isNetworkConnected()){
             new MyTask().execute(url);
-            adapter.notifyDataSetChanged();
+
         }
 
     }
@@ -232,12 +243,17 @@ private String recPositionKey = "position";
         super.onConfigurationChanged(newConfig);
         if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
-            movieList.addItemDecoration(landscapeDecoration);
+           if(movieList != null)
+           {
+               movieList.addItemDecoration(landscapeDecoration);
+           }
         }
 
         else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT)
         {
-            movieList.addItemDecoration(portratDecoration);
+            if(movieList!=null) {
+                movieList.addItemDecoration(portratDecoration);
+            }
         }
     }
 
@@ -261,7 +277,10 @@ private String recPositionKey = "position";
     public boolean isNetworkConnected() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        return cm.getActiveNetworkInfo() != null;
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
     }
 
 
@@ -271,8 +290,7 @@ private String recPositionKey = "position";
         if(!isNetworkConnected())
         {
 
-            Snackbar.make(coordinatorLayout,getResources().getString(R.string.no_internet),Snackbar.LENGTH_LONG)
-                    .show();
+            showNoInternet();
             return;
         }
     }
@@ -323,7 +341,7 @@ private String recPositionKey = "position";
         @Override
         protected void onPostExecute(String s) {
 
-            ArrayList<Movie> movies = new ArrayList<>();
+            movies = new ArrayList<>();
             super.onPostExecute(s);
             try {
                 JSONObject jsonObject = new JSONObject(s);
@@ -340,6 +358,7 @@ private String recPositionKey = "position";
 
                     adapter = new MoviesAdapter(movies,context,listener);
                     movieList.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
 
                 }
 
@@ -347,5 +366,12 @@ private String recPositionKey = "position";
                 e.printStackTrace();
             }
         }
+    }
+
+
+    private void showNoInternet()
+    {
+        Snackbar.make(coordinatorLayout,getResources().getString(R.string.no_internet),Snackbar.LENGTH_LONG)
+                .show();
     }
 }

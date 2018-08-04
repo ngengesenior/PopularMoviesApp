@@ -4,15 +4,18 @@ package com.example.ngenge.popularmovies.utils;
 import android.content.Context;
 import android.net.ConnectivityManager;
 
+import com.example.ngenge.popularmovies.BuildConfig;
 import com.example.ngenge.popularmovies.models.Movie;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Utils {
+
+    private static String  API_KEY = BuildConfig.API_KEY;
     public static String movieKey = "movie";
-    public static String basePopularUrl = "https://api.themoviedb.org/3/movie/popular?api_key=YOUR_API_KEY";
-    public static String baseTopRatedUrl = "https://api.themoviedb.org/3/movie/top_rated?api_key=YOUR_API_KEY";
+    public static String basePopularUrl = "https://api.themoviedb.org/3/movie/popular?api_key="+API_KEY;
+    public static String baseTopRatedUrl = "https://api.themoviedb.org/3/movie/top_rated?api_key="+API_KEY;
     public static String baseImageUrl = "https://image.tmdb.org/t/p/w185";
     public static String vote_count_key = "vote_count";
     public static String id_key = "id";
